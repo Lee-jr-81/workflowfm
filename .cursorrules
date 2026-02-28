@@ -1,0 +1,11 @@
+- Follow AGENTS.md as the source of truth.
+- Keep scope tight; do not add features not explicitly requested.
+- Tenant isolation is mandatory: orgSlug is routing only, org_id is the security boundary.
+- Every tenant-owned DB table must include org_id and have RLS enabled.
+- Never trust client-provided org_id; derive org_id server-side.
+- Staff requestors must NOT use client-side Supabase DB access; use server endpoints with requestor session cookie.
+- Put business logic in /server. Keep React components/pages thin.
+- Enforce job state transitions server-side and always write job_events.
+- Use zod validation for inputs and return clear errors.
+- Prefer minimal diffs; avoid large refactors unless asked.
+- For every change, provide: list of files modified + manual test steps.
