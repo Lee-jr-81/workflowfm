@@ -106,3 +106,12 @@ Admin dashboard:
 - Use transactions for multi-write operations (e.g., take job + insert job_event).
 - Prefer minimal changes; do not refactor unrelated code.
 - Always output: files changed + manual test steps + note any RLS/index changes.
+
+## System Guarantees (Non-Negotiable)
+
+- orgSlug is routing only; org_id is the security boundary.
+- All tenant data must include org_id.
+- All state transitions must be server-enforced.
+- All transitions must create job_events entries.
+- Reporting integrity depends on timestamps being written atomically.
+- UI must not contain business logic.

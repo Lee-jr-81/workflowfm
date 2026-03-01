@@ -69,3 +69,34 @@ Precondition: request portal enabled by admin.
 - TAKEN: assigned to an engineer
 - COMPLETED: closed
   All transitions write job_events and timestamps.
+
+## Job State Machine (Authoritative)
+
+Allowed states:
+
+- new
+- taken
+- completed
+
+Allowed transitions:
+
+new → taken
+taken → completed
+
+No other transitions allowed.
+
+Transitions must:
+
+- Be enforced server-side
+- Validate previous state
+- Validate actor permissions
+- Write a job_events row
+- Write timestamps atomically
+
+## Actor Capability Matrix
+
+| Actor     | Create | Take | Complete | Configure |
+| --------- | ------ | ---- | -------- | --------- |
+| Requestor | ✅     | ❌   | ❌       | ❌        |
+| Engineer  | ✅     | ✅   | ✅       | ❌        |
+| Admin     | ✅     | ✅   | ✅       | ✅        |
