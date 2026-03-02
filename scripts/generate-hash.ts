@@ -1,11 +1,13 @@
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const code = process.argv[2] || '987654';
 
 console.log('Generating bcrypt hash for PIN:', code);
 console.log('');
 
-bcrypt.hash(code, 10).then(hash => {
+async function generateHash() {
+  const hash = await bcrypt.hash(code, 10);
+  
   console.log('Hash:', hash);
   console.log('');
   console.log('SQL to update org_staff_access:');
@@ -16,10 +18,8 @@ bcrypt.hash(code, 10).then(hash => {
   console.log(`WHERE org_id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';`);
   console.log('');
   
-  // Verify it works
-  return bcrypt.compare(code, hash);
-}).then(isValid => {
+  const isValid = await bcrypt.compare(code, hash);
   console.log('Verification test:', isValid ? '✅ PASS' : '❌ FAIL');
-}).catch(err => {
-  console.error('Error:', err);
-});
+}
+
+generateHash().catch(console.error);
