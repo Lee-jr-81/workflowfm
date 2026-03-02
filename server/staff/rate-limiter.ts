@@ -8,7 +8,10 @@ const store = new Map<string, RateLimitEntry>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-export function checkRateLimit(identifier: string): { allowed: boolean; resetAt?: number } {
+export function checkRateLimit(identifier: string): {
+  allowed: boolean;
+  resetAt?: number;
+} {
   const now = Date.now();
   const entry = store.get(identifier);
 

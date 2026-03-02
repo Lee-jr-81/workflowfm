@@ -23,6 +23,17 @@ Format: `NNN_description.sql` where NNN is a zero-padded sequence number (001, 0
   - Staff portal access code: "123456"
   - **⚠️ FOR DEVELOPMENT ONLY**
 
+- `003_seed_test_engineer.sql` - Test engineer + sample jobs
+  - Adds engineer membership for test user
+  - Creates sample test jobs
+  - **⚠️ REQUIRES MANUAL EDIT:** Replace `YOUR-USER-ID-HERE` before running
+  - **⚠️ FOR DEVELOPMENT ONLY**
+
+- `004_fix_org_members_rls_recursion.sql` - RLS fix
+  - Adds SECURITY DEFINER helpers (is_active_org_member, is_org_admin)
+  - Fixes infinite recursion in org_members RLS policies
+  - **Required** - apply after init schema if querying org_members
+
 ## Applying Migrations
 
 Since you're working directly against the remote database with psql:
@@ -31,6 +42,12 @@ Since you're working directly against the remote database with psql:
 # Apply migrations in order
 psql "your-connection-string" -f supabase/migrations/20260301093246_init_core_schema.sql
 psql "your-connection-string" -f supabase/migrations/002_seed_test_data.sql
+psql "your-connection-string" -f supabase/migrations/004_fix_org_members_rls_recursion.sql
+
+# For Slice 2 (after creating auth user):
+# 1. Create user in Supabase Auth UI
+# 2. Edit 003_seed_test_engineer.sql - replace YOUR-USER-ID-HERE
+# 3. psql "..." -f supabase/migrations/003_seed_test_engineer.sql
 ```
 
 ## Production Deployment
