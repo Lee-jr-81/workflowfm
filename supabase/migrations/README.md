@@ -34,6 +34,17 @@ Format: `NNN_description.sql` where NNN is a zero-padded sequence number (001, 0
   - Fixes infinite recursion in org_members RLS policies
   - **Required** - apply after init schema if querying org_members
 
+- `005_take_job_function.sql` - Take job (Slice 3)
+  - Atomic `take_job(uuid)` for NEW → TAKEN
+  - Race-safe, single winner, audit event
+
+- `006_work_status_and_storage.sql` - Slice 4
+  - work_status (active | on_hold) on jobs
+  - work_status_note nullable
+  - job-photos storage bucket (private)
+  - take_job updated to set work_status = 'active'
+  - **Note:** If bucket insert fails, create `job-photos` bucket manually in Dashboard (private, 5MB limit, image/*)
+
 ## Applying Migrations
 
 Since you're working directly against the remote database with psql:
@@ -48,6 +59,12 @@ psql "your-connection-string" -f supabase/migrations/004_fix_org_members_rls_rec
 # 1. Create user in Supabase Auth UI
 # 2. Edit 003_seed_test_engineer.sql - replace YOUR-USER-ID-HERE
 # 3. psql "..." -f supabase/migrations/003_seed_test_engineer.sql
+
+# For Slice 3:
+psql "..." -f supabase/migrations/005_take_job_function.sql
+
+# For Slice 4:
+psql "..." -f supabase/migrations/006_work_status_and_storage.sql
 ```
 
 ## Production Deployment

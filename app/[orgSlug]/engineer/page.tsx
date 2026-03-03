@@ -7,10 +7,13 @@ import { Card } from '@/components/ui/card';
 
 export default async function EngineerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { orgSlug } = await params;
+  const { error } = await searchParams;
   const session = await getAuthSession(orgSlug);
 
   if (!session) {
@@ -24,6 +27,11 @@ export default async function EngineerPage({
 
   return (
     <div className="container max-w-4xl mx-auto p-4 py-6">
+      {error === 'already_taken' && (
+        <div className="mb-4 rounded-md bg-amber-100 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+          That job was taken by someone else.
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Job queue</h1>
         <p className="text-sm text-muted-foreground">

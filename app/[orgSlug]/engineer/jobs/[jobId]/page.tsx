@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getAuthSession } from '@/server/auth/session';
 import { getJobDetail } from '@/server/engineer/jobs';
 import { JobStatusBadge } from '@/components/engineer/job-status-badge';
+import { TakeJobButton } from '@/components/engineer/take-job-button';
+import { JobUpdatesSection } from '@/components/engineer/job-updates-section';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -45,7 +47,7 @@ export default async function JobDetailPage({
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <CardTitle className="text-xl">{job.title}</CardTitle>
-            <JobStatusBadge status={job.status} />
+            <JobStatusBadge status={job.status} workStatus={job.work_status} />
           </div>
           <p className="text-sm text-muted-foreground">
             {job.department.name}
@@ -86,6 +88,24 @@ export default async function JobDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {job.status === 'new' && (
+        <div className="mt-6">
+          <TakeJobButton jobId={job.id} orgSlug={orgSlug} />
+        </div>
+      )}
+
+      {job.status === 'taken' && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-4">Work updates</h2>
+          <JobUpdatesSection
+            jobId={job.id}
+            orgSlug={orgSlug}
+            workStatus={job.work_status ?? null}
+            workStatusNote={job.work_status_note ?? null}
+          />
+        </div>
+      )}
     </div>
   );
 }

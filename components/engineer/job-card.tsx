@@ -27,7 +27,7 @@ export function JobCard({
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-medium">{job.title}</h3>
-        <JobStatusBadge status={job.status} />
+        <JobStatusBadge status={job.status} workStatus={job.work_status} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         {job.department.name}

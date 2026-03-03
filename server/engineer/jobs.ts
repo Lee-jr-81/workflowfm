@@ -12,6 +12,7 @@ export interface JobListItem {
   job_type: 'reactive' | 'install';
   created_at: string;
   taken_at: string | null;
+  work_status?: 'active' | 'on_hold' | null;
   department: { name: string };
   location: { name: string } | null;
   category: { name: string } | null;
@@ -67,7 +68,7 @@ export async function getMyJobs(orgId: string, userId: string): Promise<JobListI
   const { data, error } = await supabase
     .from('jobs')
     .select(`
-      id, title, description, status, job_type, created_at, taken_at,
+      id, title, description, status, job_type, created_at, taken_at, work_status,
       departments!inner(name),
       locations(name),
       categories(name)
@@ -87,6 +88,7 @@ export async function getMyJobs(orgId: string, userId: string): Promise<JobListI
     job_type: 'reactive' | 'install';
     created_at: string;
     taken_at: string | null;
+    work_status?: 'active' | 'on_hold' | null;
     departments?: { name: string }[] | null;
     locations?: { name: string }[] | null;
     categories?: { name: string }[] | null;
@@ -100,6 +102,7 @@ export async function getMyJobs(orgId: string, userId: string): Promise<JobListI
     job_type: item.job_type,
     created_at: item.created_at,
     taken_at: item.taken_at,
+    work_status: item.work_status ?? null,
     department: { name: item.departments?.[0]?.name ?? '' },
     location: item.locations?.[0] ? { name: item.locations[0].name } : null,
     category: item.categories?.[0] ? { name: item.categories[0].name } : null,
@@ -110,6 +113,8 @@ export interface JobDetail extends JobListItem {
   requestor_name: string | null;
   assigned_to_user_id: string | null;
   completed_at: string | null;
+  work_status?: 'active' | 'on_hold' | null;
+  work_status_note?: string | null;
 }
 
 export async function getJobDetail(jobId: string, orgId: string): Promise<JobDetail | null> {
@@ -119,7 +124,7 @@ export async function getJobDetail(jobId: string, orgId: string): Promise<JobDet
     .from('jobs')
     .select(`
       id, title, description, status, job_type, created_at, taken_at, completed_at,
-      requestor_name, assigned_to_user_id,
+      requestor_name, assigned_to_user_id, work_status, work_status_note,
       departments!inner(name),
       locations(name),
       categories(name)
@@ -141,6 +146,8 @@ export async function getJobDetail(jobId: string, orgId: string): Promise<JobDet
     completed_at: string | null;
     requestor_name: string | null;
     assigned_to_user_id: string | null;
+    work_status?: 'active' | 'on_hold' | null;
+    work_status_note?: string | null;
     departments?: { name: string }[] | null;
     locations?: { name: string }[] | null;
     categories?: { name: string }[] | null;
@@ -158,6 +165,8 @@ export async function getJobDetail(jobId: string, orgId: string): Promise<JobDet
     completed_at: item.completed_at,
     requestor_name: item.requestor_name,
     assigned_to_user_id: item.assigned_to_user_id,
+    work_status: item.work_status ?? null,
+    work_status_note: item.work_status_note ?? null,
     department: { name: item.departments?.[0]?.name ?? '' },
     location: item.locations?.[0] ? { name: item.locations[0].name } : null,
     category: item.categories?.[0] ? { name: item.categories[0].name } : null,

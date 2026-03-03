@@ -100,3 +100,97 @@ Transitions must:
 | Requestor | ✅     | ❌   | ❌       | ❌        |
 | Engineer  | ✅     | ✅   | ✅       | ❌        |
 | Admin     | ✅     | ✅   | ✅       | ✅        |
+
+## Job Lifecycle (Authoritative)
+
+The job lifecycle is strictly:
+
+new → taken → completed
+
+No other lifecycle states exist.
+
+Allowed Transitions
+
+new → taken
+
+taken → completed
+
+Forbidden Transitions
+
+new → completed
+
+completed → any
+
+taken → new
+
+Any implicit state skipping
+
+All transitions must:
+
+Be enforced server-side
+
+Validate previous state
+
+Validate actor permissions
+
+Write a job_events row
+
+Write timestamps atomically
+
+Use server/DB time (never client time)
+
+Work Status (Sub-State of TAKEN Only)
+
+work_status is not a lifecycle state.
+
+It is a sub-status used only when status = 'taken'.
+
+Valid values:
+
+active (default when taken)
+
+on_hold
+
+Rules:
+
+Only assigned engineer (or admin) may change work_status.
+
+Setting on_hold requires a reason.
+
+Changing work_status must create job_events('work_status_changed').
+
+work_status is irrelevant once job is completed.
+
+This must never introduce new lifecycle states.
+
+Completion Rules
+
+A job may only be completed if:
+
+status = 'taken'
+
+Resolution text is provided
+
+Actor is:
+
+Assigned engineer, or
+
+Admin
+
+Completion must atomically:
+
+Set status = 'completed'
+
+Set completed_at = now()
+
+Insert job_events('completed') with resolution payload
+
+After completion:
+
+Job is read-only.
+
+No further updates allowed.
+
+No work_status changes allowed.
+
+No photo uploads allowed.

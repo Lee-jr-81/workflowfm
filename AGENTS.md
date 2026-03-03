@@ -115,3 +115,88 @@ Admin dashboard:
 - All transitions must create job_events entries.
 - Reporting integrity depends on timestamps being written atomically.
 - UI must not contain business logic.
+
+## Lifecycle Discipline (Non-Negotiable)
+
+The job lifecycle is strictly:
+
+new → taken → completed
+
+Do NOT introduce:
+
+in_progress
+
+cancelled
+
+reopened
+
+draft
+
+any additional lifecycle states
+
+work_status is NOT a lifecycle state.
+It is a sub-status valid only when status = 'taken'.
+
+Transition Requirements
+
+All state transitions must:
+
+Be server-enforced
+
+Validate previous state
+
+Validate actor permissions
+
+Be atomic
+
+Write a corresponding job_events entry
+
+Use server/DB timestamps
+
+Client must never:
+
+Set status directly
+
+Provide org_id
+
+Provide actor IDs
+
+Provide timestamps
+
+Completion Rules
+
+Completion:
+
+Requires resolution text.
+
+Only allowed from taken.
+
+Must atomically set status and completed_at.
+
+Must insert job_events('completed').
+
+Must freeze the job afterward.
+
+Security Model Reminder
+
+orgSlug is routing only; org_id is the security boundary.
+
+All tenant-owned tables must include org_id.
+
+RLS must remain enabled on all tenant tables.
+
+No direct client writes to Supabase.
+
+Storage must remain private; signed URLs minted server-side only.
+
+These additions prevent:
+
+State creep
+
+Partial transitions
+
+Client-side logic leakage
+
+Reporting corruption
+
+Lifecycle drift
