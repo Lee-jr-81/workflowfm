@@ -242,6 +242,44 @@ export interface JobTimeline {
   events: TimelineEvent[];
 }
 
+export interface JobPhoto {
+  signedUrl: string;
+}
+
+export async function getJobPhotos(
+  orgSlug: string,
+  jobId: string
+): Promise<JobPhoto[]> {
+  const ctx = await getEngineerContext(orgSlug);
+  if (!ctx) return [];
+
+  const supabase = await createAuthClient();
+  const { data: events, error } = await supabase
+    .from('job_events')
+    .select('payload')
+    .eq('job_id', jobId)
+    .eq('org_id', ctx.orgId)
+    .eq('event_type', 'photo_added');
+
+  if (error || !events?.length) return [];
+
+  const paths = events
+    .map((e) => e.payload && typeof e.payload === 'object' && 'path' in e.payload && (e.payload as { path: string }).path)
+    .filter((p): p is string => !!p);
+
+  if (paths.length === 0) return [];
+
+  const sr = getServiceRoleClient();
+  const results = await Promise.all(
+    paths.map(async (p) => {
+      const { data } = await sr.storage.from(BUCKET).createSignedUrl(p, DOWNLOAD_URL_TTL);
+      return data?.signedUrl;
+    })
+  );
+
+  return results.filter((url): url is string => !!url).map((signedUrl) => ({ signedUrl }));
+}
+
 export async function listJobTimeline(
   orgSlug: string,
   jobId: string

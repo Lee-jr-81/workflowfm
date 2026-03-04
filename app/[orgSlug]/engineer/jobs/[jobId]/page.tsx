@@ -2,9 +2,11 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAuthSession } from '@/server/auth/session';
 import { getJobDetail } from '@/server/engineer/jobs';
+import { getJobPhotos } from '@/server/engineer/jobs-updates';
 import { JobStatusBadge } from '@/components/engineer/job-status-badge';
 import { TakeJobButton } from '@/components/engineer/take-job-button';
 import { JobUpdatesSection } from '@/components/engineer/job-updates-section';
+import { CompleteJobButton } from '@/components/engineer/complete-job-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -31,7 +33,10 @@ export default async function JobDetailPage({
     redirect(`/${orgSlug}/sign-in`);
   }
 
-  const job = await getJobDetail(jobId, session.orgId);
+  const [job, photos] = await Promise.all([
+    getJobDetail(jobId, session.orgId),
+    getJobPhotos(orgSlug, jobId).catch(() => []),
+  ]);
   if (!job) notFound();
 
   return (
@@ -96,14 +101,20 @@ export default async function JobDetailPage({
       )}
 
       {job.status === 'taken' && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-4">Work updates</h2>
-          <JobUpdatesSection
-            jobId={job.id}
-            orgSlug={orgSlug}
-            workStatus={job.work_status ?? null}
-            workStatusNote={job.work_status_note ?? null}
-          />
+        <div className="mt-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Work updates</h2>
+            <JobUpdatesSection
+              jobId={job.id}
+              orgSlug={orgSlug}
+              workStatus={job.work_status ?? null}
+              workStatusNote={job.work_status_note ?? null}
+              photos={photos}
+            />
+          </div>
+          <div>
+            <CompleteJobButton jobId={job.id} orgSlug={orgSlug} />
+          </div>
         </div>
       )}
     </div>

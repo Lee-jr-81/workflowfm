@@ -45,6 +45,10 @@ Format: `NNN_description.sql` where NNN is a zero-padded sequence number (001, 0
   - take_job updated to set work_status = 'active'
   - **Note:** If bucket insert fails, create `job-photos` bucket manually in Dashboard (private, 5MB limit, image/*)
 
+- `007_complete_job_function.sql` - Slice 5
+  - Atomic `complete_job(uuid, text)` for TAKEN → COMPLETED
+  - Requires resolution text, auto-includes photos from job_events
+
 ## Applying Migrations
 
 Since you're working directly against the remote database with psql:
@@ -65,6 +69,9 @@ psql "..." -f supabase/migrations/005_take_job_function.sql
 
 # For Slice 4:
 psql "..." -f supabase/migrations/006_work_status_and_storage.sql
+
+# For Slice 5:
+psql "..." -f supabase/migrations/007_complete_job_function.sql
 ```
 
 ## Production Deployment

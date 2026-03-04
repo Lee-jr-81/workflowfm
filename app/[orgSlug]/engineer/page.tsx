@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '@/server/auth/session';
-import { getUnassignedJobs, getMyJobs } from '@/server/engineer/jobs';
+import { getUnassignedJobs, getMyJobs, getCompletedJobs } from '@/server/engineer/jobs';
 import { JobCard } from '@/components/engineer/job-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -10,19 +10,20 @@ export default async function EngineerPage({
   searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const { orgSlug } = await params;
-  const { error } = await searchParams;
+  const { error, success } = await searchParams;
   const session = await getAuthSession(orgSlug);
 
   if (!session) {
     redirect(`/${orgSlug}/sign-in`);
   }
 
-  const [unassigned, myJobs] = await Promise.all([
+  const [unassigned, myJobs, completedJobs] = await Promise.all([
     getUnassignedJobs(session.orgId),
     getMyJobs(session.orgId, session.user.id),
+    getCompletedJobs(session.orgId, session.user.id),
   ]);
 
   return (
@@ -32,17 +33,23 @@ export default async function EngineerPage({
           That job was taken by someone else.
         </div>
       )}
+      {success === 'completed' && (
+        <div className="mb-4 rounded-md bg-green-100 px-4 py-3 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-400">
+          Job completed.
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Job queue</h1>
         <p className="text-sm text-muted-foreground">
-          {unassigned.length} unassigned · {myJobs.length} in progress
+          {unassigned.length} unassigned · {myJobs.length} in progress · {completedJobs.length} completed
         </p>
       </div>
 
-      <Tabs defaultValue="unassigned" className="w-full">
-        <TabsList className="mb-6 grid w-full grid-cols-2">
+      <Tabs defaultValue={success === 'completed' ? 'completed' : 'unassigned'} className="w-full">
+        <TabsList className="mb-6 grid w-full grid-cols-3">
           <TabsTrigger value="unassigned">Unassigned ({unassigned.length})</TabsTrigger>
           <TabsTrigger value="my-jobs">My jobs ({myJobs.length})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({completedJobs.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="unassigned" className="space-y-4">
@@ -64,6 +71,18 @@ export default async function EngineerPage({
             </Card>
           ) : (
             myJobs.map((job) => (
+              <JobCard key={job.id} job={job} orgSlug={orgSlug} />
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          {completedJobs.length === 0 ? (
+            <Card className="p-12 text-center">
+              <p className="text-muted-foreground">No completed jobs yet.</p>
+            </Card>
+          ) : (
+            completedJobs.map((job) => (
               <JobCard key={job.id} job={job} orgSlug={orgSlug} />
             ))
           )}

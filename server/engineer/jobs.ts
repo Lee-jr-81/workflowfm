@@ -12,6 +12,7 @@ export interface JobListItem {
   job_type: 'reactive' | 'install';
   created_at: string;
   taken_at: string | null;
+  completed_at?: string | null;
   work_status?: 'active' | 'on_hold' | null;
   department: { name: string };
   location: { name: string } | null;
@@ -103,6 +104,54 @@ export async function getMyJobs(orgId: string, userId: string): Promise<JobListI
     created_at: item.created_at,
     taken_at: item.taken_at,
     work_status: item.work_status ?? null,
+    department: { name: item.departments?.[0]?.name ?? '' },
+    location: item.locations?.[0] ? { name: item.locations[0].name } : null,
+    category: item.categories?.[0] ? { name: item.categories[0].name } : null,
+  }));
+}
+
+export async function getCompletedJobs(orgId: string, userId: string): Promise<JobListItem[]> {
+  const supabase = await createAuthClient();
+
+  const { data, error } = await supabase
+    .from('jobs')
+    .select(`
+      id, title, description, status, job_type, created_at, taken_at, completed_at,
+      departments!inner(name),
+      locations(name),
+      categories(name)
+    `)
+    .eq('org_id', orgId)
+    .eq('assigned_to_user_id', userId)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+    .limit(20);
+
+  if (error) throw new Error('Failed to fetch jobs', { cause: error });
+
+  type Row = {
+    id: string;
+    title: string;
+    description: string | null;
+    status: 'new' | 'taken' | 'completed';
+    job_type: 'reactive' | 'install';
+    created_at: string;
+    taken_at: string | null;
+    completed_at: string | null;
+    departments?: { name: string }[] | null;
+    locations?: { name: string }[] | null;
+    categories?: { name: string }[] | null;
+  };
+
+  return (data || []).map((item: Row) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    status: item.status,
+    job_type: item.job_type,
+    created_at: item.created_at,
+    taken_at: item.taken_at,
+    completed_at: item.completed_at ?? null,
     department: { name: item.departments?.[0]?.name ?? '' },
     location: item.locations?.[0] ? { name: item.locations[0].name } : null,
     category: item.categories?.[0] ? { name: item.categories[0].name } : null,

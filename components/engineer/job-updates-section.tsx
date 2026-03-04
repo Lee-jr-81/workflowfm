@@ -23,11 +23,13 @@ export function JobUpdatesSection({
   orgSlug,
   workStatus,
   workStatusNote,
+  photos = [],
 }: {
   jobId: string;
   orgSlug: string;
   workStatus: 'active' | 'on_hold' | null;
   workStatusNote: string | null;
+  photos?: { signedUrl: string }[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -160,23 +162,40 @@ export function JobUpdatesSection({
         <p className="text-sm text-amber-600 dark:text-amber-400">{message}</p>
       )}
 
-      {/* Photo upload */}
+      {/* Photos */}
       <div>
         <label className="text-sm font-medium mb-2 block">Photos</label>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild disabled={photoUploading}>
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="sr-only"
-                onChange={handlePhotoUpload}
-                disabled={photoUploading}
-              />
-              {photoUploading ? 'Uploading...' : 'Add photo'}
-            </label>
-          </Button>
-        </div>
+        {photos.length > 0 && (
+          <div className="flex flex-wrap gap-3 mb-3">
+            {photos.map((p, i) => (
+              <a
+                key={i}
+                href={p.signedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <img
+                  src={p.signedUrl}
+                  alt={`Job photo ${i + 1}`}
+                  className="h-24 w-24 rounded object-cover border"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+        <Button variant="outline" size="sm" asChild disabled={photoUploading}>
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={handlePhotoUpload}
+              disabled={photoUploading}
+            />
+            {photoUploading ? 'Uploading...' : 'Add photo'}
+          </label>
+        </Button>
       </div>
     </div>
   );
