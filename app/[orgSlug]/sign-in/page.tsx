@@ -7,6 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+/**
+ * Magic link sign-in. Requires custom Magic Link email template so links go to
+ * /auth/verify (server-side token_hash verification) — no tokens in URL.
+ * See docs/auth-invite-template.md
+ */
 export default function SignInPage() {
   const params = useParams();
   const orgSlug = params.orgSlug as string;
@@ -29,7 +34,7 @@ export default function SignInPage() {
       const { error: err } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/${orgSlug}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/${orgSlug}/auth/verify`,
         },
       });
 
@@ -66,7 +71,7 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Engineer sign in</CardTitle>
+          <CardTitle>Sign in</CardTitle>
           <CardDescription>
             Enter your email and we&apos;ll send you a magic link.
           </CardDescription>

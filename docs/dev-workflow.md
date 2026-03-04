@@ -20,6 +20,9 @@ Environment variables (in `.env.local`):
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=https://your-domain.com  # optional; used for invite links. Defaults to http://localhost:3000
+
+**Production:** Configure the secure invite email template (see `docs/auth-invite-template.md`).
 
 `.env.local` is ignored via `.env*` in `.gitignore`.
 

@@ -49,6 +49,9 @@ Format: `NNN_description.sql` where NNN is a zero-padded sequence number (001, 0
   - Atomic `complete_job(uuid, text)` for TAKEN → COMPLETED
   - Requires resolution text, auto-includes photos from job_events
 
+- `008_staff_access_plaintext_code.sql` - Slice 6
+  - Adds `access_code_plaintext` for admin display (persists across navigation)
+
 ## Applying Migrations
 
 Since you're working directly against the remote database with psql:
@@ -72,6 +75,9 @@ psql "..." -f supabase/migrations/006_work_status_and_storage.sql
 
 # For Slice 5:
 psql "..." -f supabase/migrations/007_complete_job_function.sql
+
+# For Slice 6 (admin config + latest code persistence):
+psql "..." -f supabase/migrations/008_staff_access_plaintext_code.sql
 ```
 
 ## Production Deployment
